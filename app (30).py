@@ -3,7 +3,6 @@ import urllib.parse
 
 st.set_page_config(page_title="Gerador de Etiquetas", page_icon="🏷️", layout="wide")
 
-# Lista de camisas cadastradas
 catalog = [
     {"id": 1, "titulo": "Operário MS Home #9", "marca": "Champs", "tamanho": "M", "preco": "R$ 60,00", "link_br": "https://www.sofutebolbrasil.com/produto/569/camisa-oficial-operario-ms", "link_int": None},
     {"id": 2, "titulo": "Juventus Mooca Azul 459 Anos", "marca": "Superbolla", "tamanho": "M", "preco": "R$ 120,00", "link_br": "https://www.mercadolivre.com.br/camisa-juventus-da-mooca-especial-2015-azul/up/MLBU1726959953", "link_int": None},
@@ -24,145 +23,44 @@ catalog = [
 ]
 
 def get_qr_url(link):
-    """Gera a URL da imagem do QR Code usando QuickChart API"""
     if not link:
         return None
     encoded = urllib.parse.quote(link)
     return f"https://quickchart.io/qr?text={encoded}&size=150"
 
-# CSS para controlar o layout na tela e na impressão
-st.markdown("""
-<style>
-/* Estilos para a tela */
-.label-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: flex-start;
-}
-
-.shirt-card {
-    border: 2px dashed #333;
-    border-radius: 8px;
-    padding: 10px;
-    width: 320px;
-    background-color: #ffffff;
-    color: #000000;
-    font-family: Arial, sans-serif;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    page-break-inside: avoid;
-}
-
-.shirt-header {
-    font-size: 14px;
-    font-weight: bold;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 4px;
-    margin-bottom: 6px;
-    text-transform: uppercase;
-}
-
-.shirt-details {
-    font-size: 12px;
-    margin-bottom: 6px;
-}
-
-.price-tag {
-    font-size: 16px;
-    font-weight: bold;
-    color: #2e7d32;
-    margin-top: 4px;
-}
-
-.qr-container {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    margin-top: 6px;
-    border-top: 1px solid #eee;
-    padding-top: 6px;
-}
-
-.qr-box {
-    text-align: center;
-    font-size: 10px;
-    font-weight: bold;
-}
-
-.qr-box img {
-    width: 70px;
-    height: 70px;
-    display: block;
-    margin: 0 auto;
-}
-
-/* Ocultar elementos do Streamlit ao imprimir */
-@media print {
-    header, footer, .stButton, .no-print, [data-testid="stSidebar"] {
-        display: none !important;
-    }
-    body {
-        background: white !important;
-    }
-    .main .block-container {
-        padding: 0 !important;
-    }
-    .label-grid {
-        gap: 8px;
-    }
-    .shirt-card {
-        border: 1px dashed #000 !important;
-        box-shadow: none !important;
-    }
-}
-</style>
-""", unsafe_allow_html=True)
-
 st.title("🏷️ Gerador de Etiquetas para Embalagens")
-st.write("Clique no botão abaixo para abrir a janela de impressão. As etiquetas já estão formatadas com bordas pontilhadas para corte!")
+st.write("Abaixo estão suas etiquetas formatadas com QR Code. Para imprimir ou salvar em PDF, utilize a função de impressão do seu navegador (Menu do navegador > Imprimir).")
 
-# Botão de impressão (ativa o print do próprio navegador)
-st.components.v1.html("""
-    <button onclick="window.print()" style="
-        background-color: #4CAF50;
-        color: white;
-        padding: 12px 24px;
-        font-size: 16px;
-        font-weight: bold;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        width: 100%;
-    ">🖨️ Imprimir Todas as Etiquetas (PDF / Impressora)</button>
-""", height=60)
+st.divider()
 
-st.markdown("---")
+# Exibe em grade de 2 colunas para caber bem na tela do celular/computador
+cols = st.columns(2)
 
-# Monta o HTML das etiquetas em grade
-html_content = '<div class="label-grid">'
-
-for item in catalog:
-    qr_br = get_qr_url(item['link_br'])
-    qr_int = get_qr_url(item['link_int'])
+for idx, item in enumerate(catalog):
+    # Alterna entre as colunas
+    col = cols[idx % 2]
     
-    qr_br_html = f'<div class="qr-box">🇧🇷 BR<img src="{qr_br}"/></div>' if qr_br else ''
-    qr_int_html = f'<div class="qr-box">🌎 INT<img src="{qr_int}"/></div>' if qr_int else ''
-
-    html_content += f"""
-    <div class="shirt-card">
-        <div class="shirt-header">#{item['id']} {item['titulo']}</div>
-        <div class="shirt-details">
-            <b>Marca:</b> {item['marca']} | <b>Tam:</b> {item['tamanho']}<br>
-            <div class="price-tag">Preço: {item['preco']}</div>
-        </div>
-        <div class="qr-container">
-            {qr_br_html}
-            {qr_int_html}
-        </div>
-    </div>
-    """
-
-html_content += '</div>'
-
-# Exibe na página
-st.markdown(html_content, unsafe_allow_html=True)
+    with col:
+        with st.container(border=True):
+            st.subheader(f"#{item['id']} {item['titulo']}")
+            st.caption(f"**Marca:** {item['marca']} | **Tamanho:** {item['tamanho']}")
+            st.markdown(f"### **Preço:** :green[{item['preco']}]")
+            
+            c_br, c_int = st.columns(2)
+            
+            qr_br = get_qr_url(item['link_br'])
+            qr_int = get_qr_url(item['link_int'])
+            
+            with c_br:
+                if qr_br:
+                    st.caption("🇧🇷 **BR**")
+                    st.image(qr_br, width=110)
+                else:
+                    st.caption("🇧🇷 *Sem Link*")
+                    
+            with c_int:
+                if qr_int:
+                    st.caption("🌎 **INT**")
+                    st.image(qr_int, width=110)
+                else:
+                    st.caption("🌎 *Sem Link*")
