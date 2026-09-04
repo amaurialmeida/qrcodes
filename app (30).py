@@ -569,7 +569,7 @@ def carregar_dados():
             "marca": "Panini",
             "tamanho": "Edição 2014",
             "preco_original": 0.0,
-            "preco_atual": 0.0, # Preço sob consulta
+            "preco_atual": 0.0,
             "tag": "livro",
             "vendido": False,
             "link_br": "https://sp.olx.com.br/sao-paulo-e-regiao/antiguidades/kit-atualizacao-copa-2014-panini-1528325551",
@@ -637,7 +637,9 @@ for idx, (_, item) in enumerate(df_filtrado.iterrows()):
         with st.container():
             # Exibe imagem principal (ou placeholder)
             foto_principal = item["fotos"][0] if item["fotos"] else "https://via.placeholder.com/400x500?text=Sem+Foto"
-            st.image(foto_principal, use_column_width=True)
+            
+            # PARÂMETRO CORRIGIDO (use_container_width):
+            st.image(foto_principal, use_container_width=True)
             
             # Badges de Status / Tag
             if item["vendido"]:
