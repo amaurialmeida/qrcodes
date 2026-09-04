@@ -7,7 +7,7 @@ from PIL import Image
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
-    page_title="Acervo & Catálogo de Colecionáveis ⚽📚",
+    page_title="Acervo & Catálogo de Colecionáveis ⚽📚🪙",
     layout="wide",
     page_icon="⚽"
 )
@@ -506,8 +506,8 @@ def carregar_dados():
             "preco_atual": 180.0,
             "tag": "colecionador",
             "vendido": False,
-            "link_br": None,
-            "link_int": None,
+            "link_br": "https://www.numismaticavieira.com.br/Moedas-Nacionais/Republica/Aco/Real/moeda-de-um-real-comemorativa-aos-jogos-olimpicos-rio-2016-futebol___642139-SIT.html",
+            "link_int": "https://qrcodes-rguxkngmtumghgrvux5mzj.streamlit.app/",
             "fotos": ["https://via.placeholder.com/400x500?text=Lote+Moedas+1+Real"]
         },
 
@@ -582,113 +582,222 @@ def carregar_dados():
 
 df_acervo = carregar_dados()
 
-# --- BARRA LATERAL (FILTROS) ---
-st.sidebar.title("⚽ Filtros do Acervo")
+# --- LISTA DE MOEDAS COM LINKS DA NUMISMÁTICA VIEIRA ---
+MOEDAS_LINKS = [
+    {
+        "nome": "Moeda Futebol Olimpíada 2016",
+        "url": "https://www.numismaticavieira.com.br/Moedas-Nacionais/Republica/Aco/Real/moeda-de-um-real-comemorativa-aos-jogos-olimpicos-rio-2016-futebol___642139-SIT.html"
+    },
+    {
+        "nome": "Moeda Canoagem Olimpíada 2016",
+        "url": "https://www.numismaticavieira.com.br/Moedas-Nacionais/Republica/Aco/Real/moeda-de-um-real-comemorativa-aos-jogos-olimpicos-rio-2016-paracanoagem___602017-SIT.html"
+    },
+    {
+        "nome": "Moeda Golfe Olimpíada 2016",
+        "url": "https://www.numismaticavieira.com.br/Moedas-Nacionais/Republica/Aco/Real/moeda-de-um-real-comemorativa-aos-jogos-olimpicos-rio-2016-golfe___566398-SIT.html"
+    },
+    {
+        "nome": "Moeda Voleibol Olimpíada 2016",
+        "url": "https://www.numismaticavieira.com.br/Moedas-Nacionais/Republica/Aco/Real/moeda-de-um-real-comemorativa-aos-jogos-olimpicos-rio-2016-voleibol___642141-SIT.html"
+    },
+    {
+        "nome": "Moeda Natação Olimpíada 2016",
+        "url": "https://www.numismaticavieira.com.br/Moedas-Nacionais/Republica/Aco/Real/moeda-de-um-real-comemorativa-aos-jogos-olimpicos-rio-2016-natacao___566396-SIT.html"
+    },
+    {
+        "nome": "Moeda Judô Olimpíada 2016",
+        "url": "https://www.numismaticavieira.com.br/Moedas-Nacionais/Republica/Aco/Real/moeda-de-um-real-comemorativa-aos-jogos-olimpicos-rio-2016-judo___642140-SIT.html"
+    },
+    {
+        "nome": "Moeda Vela Olimpíada 2016",
+        "url": "https://www.numismaticavieira.com.br/Moedas-Nacionais/Republica/Aco/Real/moeda-de-um-real-comemorativa-aos-jogos-olimpicos-rio-2016-vela___602019-SIT.html"
+    },
+    {
+        "nome": "Moeda Atletismo Salto com Vara Olimpíada 2016",
+        "url": "https://www.numismaticavieira.com.br/Moedas-Nacionais/Republica/Aco/Real/moeda-de-um-real-comemorativa-aos-jogos-olimpicos-rio-2016-atletismo___566394-SIT.html"
+    },
+    {
+        "nome": "Moeda Mascote TOM Olimpíada 2016",
+        "url": "https://www.numismaticavieira.com.br/Moedas-Nacionais/Republica/Aco/Real/moeda-de-um-real-comemorativa-aos-jogos-olimpicos-rio-2016-mascote-paralimpico-tom___711998-SIT.html"
+    },
+    {
+        "nome": "Moeda Paratriatlo Olimpíada 2016",
+        "url": "https://www.numismaticavieira.com.br/Moedas-Nacionais/Republica/Aco/Real/moeda-de-um-real-comemorativa-aos-jogos-olimpicos-rio-2016-paratriatlo___566399-SIT.html"
+    },
+    {
+        "nome": "Moeda Atletismo Paraolímpico 2016",
+        "url": "https://www.numismaticavieira.com.br/Moedas-Nacionais/Republica/Aco/Real/moeda-de-um-real-comemorativa-aos-jogos-ol%C3%ADmpicos-rio-2016-atletismo-paral%C3%ADmpico___642138-SIT.html"
+    },
+    {
+        "nome": "Moeda Banco Central 40 Anos",
+        "url": "https://www.numismaticavieira.com.br/Moedas-Nacionais/Republica/Aco/Real/catalogo-vieira-no-95-1-real-banco-central-bimetalica___432487-SIT.html"
+    }
+]
 
-categorias_disponiveis = ["Todas"] + list(df_acervo["categoria"].unique())
-categoria_sel = st.sidebar.selectbox("Filtrar por Categoria", categorias_disponiveis)
+# --- NAVEGAÇÃO POR ABAS ---
+tab_acervo, tab_moedas, tab_sites = st.tabs([
+    "📦 Acervo & Catálogo",
+    "🪙 Coleção de Moedas (Links & Referências)",
+    "🌐 QR Codes dos Meus Sites"
+])
 
-paises_disponiveis = ["Todos"] + list(df_acervo["pais"].dropna().unique())
-pais_sel = st.sidebar.selectbox("Filtrar por País", paises_disponiveis)
+# ==========================================
+# ABA 1: ACERVO & CATÁLOGO DE COLECIONÁVEIS
+# ==========================================
+with tab_acervo:
+    # BARRA LATERAL (FILTROS)
+    st.sidebar.title("⚽ Filtros do Acervo")
 
-marcas_disponiveis = ["Todas"] + list(df_acervo["marca"].dropna().unique())
-marca_sel = st.sidebar.selectbox("Filtrar por Marca / Editora", marcas_disponiveis)
+    categorias_disponiveis = ["Todas"] + list(df_acervo["categoria"].unique())
+    categoria_sel = st.sidebar.selectbox("Filtrar por Categoria", categorias_disponiveis)
 
-status_sel = st.sidebar.radio("Status do Item", ["Todos", "Apenas Disponíveis", "Apenas Vendidos"])
+    paises_disponiveis = ["Todos"] + list(df_acervo["pais"].dropna().unique())
+    pais_sel = st.sidebar.selectbox("Filtrar por País", paises_disponiveis)
 
-busca = st.sidebar.text_input("🔍 Buscar no Título ou Detalhes")
+    marcas_disponiveis = ["Todas"] + list(df_acervo["marca"].dropna().unique())
+    marca_sel = st.sidebar.selectbox("Filtrar por Marca / Editora", marcas_disponiveis)
 
-# Aplicando Filtros
-df_filtrado = df_acervo.copy()
+    status_sel = st.sidebar.radio("Status do Item", ["Todos", "Apenas Disponíveis", "Apenas Vendidos"])
 
-if categoria_sel != "Todas":
-    df_filtrado = df_filtrado[df_filtrado["categoria"] == categoria_sel]
+    busca = st.sidebar.text_input("🔍 Buscar no Título ou Detalhes")
 
-if pais_sel != "Todos":
-    df_filtrado = df_filtrado[df_filtrado["pais"] == pais_sel]
+    # Aplicando Filtros
+    df_filtrado = df_acervo.copy()
 
-if marca_sel != "Todas":
-    df_filtrado = df_filtrado[df_filtrado["marca"] == marca_sel]
+    if categoria_sel != "Todas":
+        df_filtrado = df_filtrado[df_filtrado["categoria"] == categoria_sel]
 
-if status_sel == "Apenas Disponíveis":
-    df_filtrado = df_filtrado[~df_filtrado["vendido"]]
-elif status_sel == "Apenas Vendidos":
-    df_filtrado = df_filtrado[df_filtrado["vendido"]]
+    if pais_sel != "Todos":
+        df_filtrado = df_filtrado[df_filtrado["pais"] == pais_sel]
 
-if busca:
-    df_filtrado = df_filtrado[
-        df_filtrado["titulo"].str.contains(busca, case=False, na=False) |
-        df_filtrado["time_regiao"].str.contains(busca, case=False, na=False)
-    ]
+    if marca_sel != "Todas":
+        df_filtrado = df_filtrado[df_filtrado["marca"] == marca_sel]
 
-# --- CABEÇALHO ---
-st.title("⚽ Acervo de Colecionáveis: Camisas, Livros & Moedas")
-st.write(f"Exibindo **{len(df_filtrado)}** item(ns) encontrado(s) de um total de {len(df_acervo)}.")
+    if status_sel == "Apenas Disponíveis":
+        df_filtrado = df_filtrado[~df_filtrado["vendido"]]
+    elif status_sel == "Apenas Vendidos":
+        df_filtrado = df_filtrado[df_filtrado["vendido"]]
 
-st.markdown("---")
+    if busca:
+        df_filtrado = df_filtrado[
+            df_filtrado["titulo"].str.contains(busca, case=False, na=False) |
+            df_filtrado["time_regiao"].str.contains(busca, case=False, na=False)
+        ]
 
-# --- GRID DE PRODUTOS ---
-cols = st.columns(3)
+    st.title("⚽ Acervo de Colecionáveis: Camisas, Livros & Moedas")
+    st.write(f"Exibindo **{len(df_filtrado)}** item(ns) encontrado(s) de um total de {len(df_acervo)}.")
+    st.markdown("---")
 
-for idx, (_, item) in enumerate(df_filtrado.iterrows()):
-    col = cols[idx % 3]
-    
-    with col:
-        with st.container():
-            # Exibe imagem principal (ou placeholder)
-            foto_principal = item["fotos"][0] if item["fotos"] else "https://via.placeholder.com/400x500?text=Sem+Foto"
-            
-            # PARÂMETRO CORRIGIDO (use_container_width):
-            st.image(foto_principal, use_container_width=True)
-            
-            # Badges de Status / Tag
-            if item["vendido"]:
-                st.markdown('<span class="badge-vendido"> VENDIDO</span>', unsafe_allow_html=True)
-            elif item["tag"] == "barateou":
-                st.markdown('<span class="badge-barateou">⚡ BARATEOU</span>', unsafe_allow_html=True)
-            elif item["tag"] == "livro":
-                st.markdown('<span class="badge-livro">📚 LIVRO / OBRAS</span>', unsafe_allow_html=True)
+    # GRID DE PRODUTOS
+    cols = st.columns(3)
+
+    for idx, (_, item) in enumerate(df_filtrado.iterrows()):
+        col = cols[idx % 3]
+        
+        with col:
+            with st.container():
+                foto_principal = item["fotos"][0] if item["fotos"] else "https://via.placeholder.com/400x500?text=Sem+Foto"
+                st.image(foto_principal, use_container_width=True)
                 
-            # Título e Especificações
-            st.markdown(f'<div class="shirt-title">{item["titulo"]}</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="shirt-sub"><b>Marca/Editora:</b> {item["marca"]} | <b>Tamanho/Edição:</b> {item["tamanho"]}</div>', unsafe_allow_html=True)
-            
-            # Preço
-            if item["preco_atual"] > 0:
-                if item["preco_original"] > item["preco_atual"]:
-                    st.markdown(
-                        f'<span class="price-tag">R$ {item["preco_atual"]:.2f}</span>'
-                        f'<span class="old-price">R$ {item["preco_original"]:.2f}</span>',
-                        unsafe_allow_html=True
-                    )
+                # Badges
+                if item["vendido"]:
+                    st.markdown('<span class="badge-vendido"> VENDIDO</span>', unsafe_allow_html=True)
+                elif item["tag"] == "barateou":
+                    st.markdown('<span class="badge-barateou">⚡ BARATEOU</span>', unsafe_allow_html=True)
+                elif item["tag"] == "livro":
+                    st.markdown('<span class="badge-livro">📚 LIVRO / OBRAS</span>', unsafe_allow_html=True)
+                    
+                # Título e Especificações
+                st.markdown(f'<div class="shirt-title">{item["titulo"]}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="shirt-sub"><b>Marca/Editora:</b> {item["marca"]} | <b>Tamanho/Edição:</b> {item["tamanho"]}</div>', unsafe_allow_html=True)
+                
+                # Preço
+                if item["preco_atual"] > 0:
+                    if item["preco_original"] > item["preco_atual"]:
+                        st.markdown(
+                            f'<span class="price-tag">R$ {item["preco_atual"]:.2f}</span>'
+                            f'<span class="old-price">R$ {item["preco_original"]:.2f}</span>',
+                            unsafe_allow_html=True
+                        )
+                    else:
+                        st.markdown(f'<span class="price-tag">R$ {item["preco_atual"]:.2f}</span>', unsafe_allow_html=True)
                 else:
-                    st.markdown(f'<span class="price-tag">R$ {item["preco_atual"]:.2f}</span>', unsafe_allow_html=True)
-            else:
-                st.markdown('<span class="price-tag">Sob Consulta</span>', unsafe_allow_html=True)
-            
-            # Link de Compra Direct no WhatsApp
-            msg_wsp = f"Olá Amauri, vi no app seu item: '{item['titulo']}' e tenho interesse!"
-            wsp_url = f"https://wa.me/{WHATSAPP_NUMERO}?text={urllib.parse.quote(msg_wsp)}"
-            
-            if not item["vendido"]:
-                st.markdown(f"[💬 Tenho Interesse (WhatsApp)]({wsp_url})", unsafe_allow_html=True)
-            
-            # Expander de Links de Referência & QR Code
-            with st.expander("🔗 Links de Referência & QR Code"):
-                link_ref = item["link_br"] or item["link_int"]
+                    st.markdown('<span class="price-tag">Sob Consulta</span>', unsafe_allow_html=True)
                 
-                if item["link_br"]:
-                    st.write(f"🇧🇷 [Link Nacional / Shopee / OLX]({item['link_br']})")
-                if item["link_int"]:
-                    st.write(f"🌐 [Link Internacional / Estante Virtual]({item['link_int']})")
-                if not item["link_br"] and not item["link_int"]:
-                    st.write("Sem links de referência cadastrados.")
+                # Link WhatsApp
+                msg_wsp = f"Olá Amauri, vi no app seu item: '{item['titulo']}' e tenho interesse!"
+                wsp_url = f"https://wa.me/{WHATSAPP_NUMERO}?text={urllib.parse.quote(msg_wsp)}"
                 
-                # Exibição do QR Code estático do link de referência
-                if link_ref:
-                    qr_img = gerar_qr_code(link_ref)
-                    buf = io.BytesIO()
-                    qr_img.save(buf, format="PNG")
-                    st.image(buf.getvalue(), caption="Aponte a câmera para o Link de Referência", width=150)
+                if not item["vendido"]:
+                    st.markdown(f"[💬 Tenho Interesse (WhatsApp)]({wsp_url})", unsafe_allow_html=True)
+                
+                # Expander de Links de Referência & QR Code
+                with st.expander("🔗 Links de Referência & QR Code"):
+                    link_ref = item["link_br"] or item["link_int"]
+                    
+                    if item["link_br"]:
+                        st.write(f"🇧🇷 [Link Nacional / Shopee / OLX]({item['link_br']})")
+                    if item["link_int"]:
+                        st.write(f"🌐 [Link Internacional / Estante Virtual]({item['link_int']})")
+                    if not item["link_br"] and not item["link_int"]:
+                        st.write("Sem links de referência cadastrados.")
+                    
+                    if link_ref:
+                        qr_img = gerar_qr_code(link_ref)
+                        buf = io.BytesIO()
+                        qr_img.save(buf, format="PNG")
+                        st.image(buf.getvalue(), caption="Aponte a câmera para o Link de Referência", width=150)
 
-            st.markdown("---")
+                st.markdown("---")
+
+# ==========================================
+# ABA 2: COLEÇÃO DE MOEDAS (LINKS & QR CODES)
+# ==========================================
+with tab_moedas:
+    st.title("🪙 Catálogo de Referência de Moedas Olímpicas & Comemorativas")
+    st.write("Consulte os links oficiais no catálogo da Numismática Vieira e escaneie o QR Code individual de cada moeda.")
+    st.markdown("---")
+
+    grid_moedas = st.columns(3)
+    
+    for idx, moeda in enumerate(MOEDAS_LINKS):
+        col = grid_moedas[idx % 3]
+        with col:
+            with st.container():
+                st.subheader(f"🪙 {moeda['nome']}")
+                st.markdown(f"[🔗 Ver no Catálogo Numismática Vieira]({moeda['url']})", unsafe_allow_html=True)
+                
+                qr_img = gerar_qr_code(moeda['url'])
+                buf = io.BytesIO()
+                qr_img.save(buf, format="PNG")
+                st.image(buf.getvalue(), caption=f"QR Code: {moeda['nome']}", width=180)
+                st.markdown("---")
+
+# ==========================================
+# ABA 3: QR CODES DOS MEUS SITES
+# ==========================================
+with tab_sites:
+    st.title("🌐 QR Codes de Acesso aos Aplicativos")
+    st.write("Aponte a câmera do celular para acessar diretamente as plataformas de vendas.")
+    st.markdown("---")
+
+    col_site1, col_site2 = st.columns(2)
+
+    url_site1 = "https://qrcodes-rguxkngmtumghgrvux5mzj.streamlit.app/"
+    url_site2 = "https://tshirts-football2026.streamlit.app/"
+
+    with col_site1:
+        st.subheader("📚 Site 1: Livros & Moedas")
+        st.markdown(f"**Link Direto:** [{url_site1}]({url_site1})")
+        qr_site1 = gerar_qr_code(url_site1)
+        buf_site1 = io.BytesIO()
+        qr_site1.save(buf_site1, format="PNG")
+        st.image(buf_site1.getvalue(), caption="Acesse o Site 1 (Livros e Moedas)", width=260)
+
+    with col_site2:
+        st.subheader("⚽ Site 2: Camisas de Futebol")
+        st.markdown(f"**Link Direto:** [{url_site2}]({url_site2})")
+        qr_site2 = gerar_qr_code(url_site2)
+        buf_site2 = io.BytesIO()
+        qr_site2.save(buf_site2, format="PNG")
+        st.image(buf_site2.getvalue(), caption="Acesse o Site 2 (Camisas de Futebol)", width=260)
